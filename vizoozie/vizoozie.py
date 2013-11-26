@@ -30,6 +30,10 @@ class VizOozie(object):
         ok = node.getElementsByTagName("ok")[0]
         return ok
     
+    def getError(self, node):
+        error = node.getElementsByTagName("error")[0]
+        return error
+
     def processHeader(self, name):
         output = "digraph{\nsize = \"8,8\";ratio=fill;node[fontsize=24];labelloc=\"t\";label=\"" + name + "\";\n"
         return output
@@ -52,8 +56,11 @@ class VizOozie(object):
                     break
             ok = self.getOK(node)
             to = self.getTo(ok)
+            error = self.getError(node)
+            to_error = self.getTo(error)
             output += '\n'+name.replace('-', '_') + " [shape=box,style=filled,color=" + color + "];\n"
-            output += '\n'+name.replace('-', '_') + " -> " + to.replace('-', '_') + ";\n"
+            output += '\n'+name.replace('-', '_') + " -> " + to.replace('-', '_') + "[style=bold,label=\"ok\",fontsize=20];\n"
+            output += '\n'+name.replace('-', '_') + " -> " + to_error.replace('-', '_') + "[style=dotted,label=\"error\",fontsize=20];\n" 
         return output
     
     def processFork(self, doc):
@@ -85,7 +92,7 @@ class VizOozie(object):
             output += '\n' + name.replace('-', '_') + " [shape=diamond];\n"
             for case in switch.getElementsByTagName("case"):
                 to = case.getAttribute("to")
-                caseValue = case.childNodes[0].nodeValue.replace('"', '')
+                caseValue = case.childNodes[0].nodeValue.replace("\n",'').replace('"', '')
                 output += '\n' + name.replace('-', '_') + " -> " + to.replace('-', '_') + "[style=bold,label=\"" + caseValue + "\",fontsize=20];\n"
             
             default = switch.getElementsByTagName("default")[0]
